@@ -53,6 +53,7 @@ class configure(Aspect):
         node = _next(key)
         config = (self.config or dict()).get(key, dict())
         if type(node) is type:
+            # XXX: this destroys order
             node = node(**config)
         else:
             node = instantiate(node, config=config)
