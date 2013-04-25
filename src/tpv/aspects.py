@@ -63,3 +63,18 @@ class configure(Aspect):
     def values(self):
         for k in self.keys():
             yield self[k]
+
+
+class keys(Aspect):
+    def keys(self):
+        raise NotImplemented
+
+
+class values(Aspect):
+    def values(self):
+        raise NotImplemented
+
+
+class items(Aspect):
+    def items(self):
+        raise NotImplemented
