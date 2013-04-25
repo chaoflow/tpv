@@ -1,3 +1,4 @@
+import metachao
 from metachao import aspect
 from metachao.aspect import Aspect
 
@@ -52,9 +53,13 @@ class configure(Aspect):
     def __getitem__(_next, self, key):
         node = _next(key)
         config = (self.config or dict()).get(key, dict())
-        if type(node) is type:
+        if metachao.utils.isclass(node):
             # XXX: this destroys order
             node = node(**config)
         else:
-            node = instantiate(node, config=config)
+            node = configure(node, config=config)
         return node
+
+    def values(self):
+        for k in self.keys():
+            yield self[k]
