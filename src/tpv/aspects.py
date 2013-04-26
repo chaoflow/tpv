@@ -67,14 +67,14 @@ class configure(Aspect):
 
 class keys(Aspect):
     def keys(self):
-        raise NotImplemented
+        return list(self)
 
 
 class values(Aspect):
     def values(self):
-        raise NotImplemented
+        return list(self.itervalues())
 
 
 class items(Aspect):
     def items(self):
-        raise NotImplemented
+        return list(self.iteritems())
