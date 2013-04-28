@@ -3,6 +3,17 @@ from metachao import aspect
 from metachao.aspect import Aspect
 
 
+class child_aspect(Aspect):
+    child_aspect = aspect.aspectkw(child_aspects=None)
+
+    @aspect.plumb
+    def __getitem__(_next, self, key):
+        child = _next(key)
+        if self.child_aspect:
+            child = self.child_aspect(child)
+        return child
+
+
 class getattr_children(Aspect):
     def __getattr__(self, name):
         """Blend in children as attributes
