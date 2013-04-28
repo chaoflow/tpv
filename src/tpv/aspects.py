@@ -82,10 +82,10 @@ class keys(Aspect):
 
 
 class values(Aspect):
-    def values(self):
-        return list(self.itervalues())
+    def values(self, **kw):
+        return list(self.itervalues(**kw))
 
 
 class items(Aspect):
-    def items(self):
-        return list(self.iteritems())
+    def items(self, **kw):
+        return list(self.iteritems(**kw))
