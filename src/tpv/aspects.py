@@ -4,7 +4,7 @@ from metachao.aspect import Aspect
 
 
 class child_aspect(Aspect):
-    child_aspect = aspect.aspectkw(child_aspects=None)
+    child_aspect = aspect.aspectkw(child_aspect=None)
 
     @aspect.plumb
     def __getitem__(_next, self, key):
