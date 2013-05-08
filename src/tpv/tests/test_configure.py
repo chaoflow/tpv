@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from ..ordereddict import Node
 from ..testing import unittest
 
