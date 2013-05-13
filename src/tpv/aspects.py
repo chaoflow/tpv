@@ -14,6 +14,17 @@ class child_aspect(Aspect):
         return child
 
 
+class child_aspects(Aspect):
+    child_aspects = aspect.aspectkw(child_aspects=[])
+
+    @aspect.plumb
+    def __getitem__(_next, self, key):
+        child = _next(key)
+        for aspect in reversed(self.child_aspects):
+            child = aspect(child)
+            return child
+
+
 class getattr_children(Aspect):
     def __getattr__(self, name):
         """Blend in children as attributes
