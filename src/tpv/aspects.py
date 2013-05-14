@@ -21,8 +21,25 @@ class child_aspects(Aspect):
     def __getitem__(_next, self, key):
         child = _next(key)
         for aspect in reversed(self.child_aspects):
+            # XXX: hack
+            dn = child.dn
+            directory = child.directory
             child = aspect(child)
+            child.dn = dn
+            child.directory = directory
             return child
+
+    @aspect.plumb
+    def search(_next, self, *args, **kw):
+        for node in _next(*args, **kw):
+            for aspect in reversed(self.child_aspects):
+                # XXX: hack
+                dn = node.dn
+                directory = node.directory
+                node = aspect(node)
+                node.dn = dn
+                node.directory = directory
+            yield node
 
 
 class getattr_children(Aspect):
