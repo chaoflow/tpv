@@ -27,7 +27,7 @@ class child_aspects(Aspect):
             child = aspect(child)
             child.dn = dn
             child.directory = directory
-            return child
+        return child
 
     @aspect.plumb
     def search(_next, self, *args, **kw):
