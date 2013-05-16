@@ -12,6 +12,9 @@ class References(object):
     def __iter__(self):
         return self.iterkeys()
 
+    def __contains__(self, id):
+        return id in self.ids
+
     def iterkeys(self):
         return (id for id in self.ids)
 
