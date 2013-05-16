@@ -1,5 +1,6 @@
 class References(object):
-    def __init__(self, ids=None, source=None):
+    def __init__(self, ldaplist=None, ids=None, source=None):
+        self.ldaplist = ldaplist
         self.ids = ids
         self.source = source
 
@@ -24,12 +25,12 @@ class References(object):
     def remove(self, id):
         """remove id from referenced items
         """
-        self.ids.remove(id)
+        self.ldaplist.remove(id)
 
     def update(self, id):
         """add id to the referenced items
         """
-        self.ids.append(id)
+        self.ldaplist.append(id)
 
     def values(self):
         return self.itervalues()
