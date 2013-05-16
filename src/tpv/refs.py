@@ -21,5 +21,15 @@ class References(object):
     def keys(self):
         return self.iterkeys()
 
+    def remove(self, id):
+        """remove id from referenced items
+        """
+        self.ids.remove(id)
+
+    def update(self, id):
+        """add id to the referenced items
+        """
+        self.ids.append(id)
+
     def values(self):
         return self.itervalues()
