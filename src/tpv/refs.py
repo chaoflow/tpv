@@ -1,3 +1,8 @@
+from __future__ import absolute_import
+
+import ldap
+
+
 class References(object):
     def __init__(self, ldaplist=None, ids=None, source=None):
         self.ldaplist = ldaplist
@@ -25,12 +30,18 @@ class References(object):
     def remove(self, id):
         """remove id from referenced items
         """
-        self.ldaplist.remove(id)
+        try:
+            self.ldaplist.remove(id)
+        except ldap.NO_SUCH_ATTRIBUTE:
+            pass
 
     def update(self, id):
         """add id to the referenced items
         """
-        self.ldaplist.append(id)
+        try:
+            self.ldaplist.append(id)
+        except ldap.TYPE_OR_VALUE_EXISTS:
+            pass
 
     def values(self):
         return self.itervalues()
