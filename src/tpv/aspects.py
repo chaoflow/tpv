@@ -10,21 +10,10 @@ class child_aspect(Aspect):
     def __getitem__(_next, self, key):
         child = _next(key)
         if self.child_aspect:
-            child = self.child_aspect(child)
-        return child
-
-
-class child_aspects(Aspect):
-    child_aspects = aspect.aspectkw(child_aspects=[])
-
-    @aspect.plumb
-    def __getitem__(_next, self, key):
-        child = _next(key)
-        for aspect in reversed(self.child_aspects):
             # XXX: hack
             dn = child.dn
             directory = child.directory
-            child = aspect(child)
+            child = self.child_aspect(child)
             child.dn = dn
             child.directory = directory
         return child
@@ -32,11 +21,11 @@ class child_aspects(Aspect):
     @aspect.plumb
     def search(_next, self, *args, **kw):
         for node in _next(*args, **kw):
-            for aspect in reversed(self.child_aspects):
+            if self.child_aspect:
                 # XXX: hack
                 dn = node.dn
                 directory = node.directory
-                node = aspect(node)
+                node = self.child_aspect(node)
                 node.dn = dn
                 node.directory = directory
             yield node
