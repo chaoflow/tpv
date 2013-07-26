@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import metachao.utils
 import pkg_resources
 
 from metachao import aspect
@@ -19,4 +20,7 @@ class children_from_entry_points(aspect.Aspect):
             parent = self
             while path:
                 parent = parent[path.pop(0)]
-            parent[name] = ep.load()
+            node = ep.load()
+            if metachao.utils.isclass(node):
+                node = node()
+            parent[name] = node
