@@ -2,27 +2,27 @@ from __future__ import absolute_import
 
 import tpv.pkg_resources
 
-from metachao.classnode import ClassNode
+from metachao import classtree
 from tpv.testing import unittest
 
 
-class Root(ClassNode):
+class Root(classtree.Node):
     pass
 
 
-class A(ClassNode):
+class A(classtree.Node):
     pass
 
 
-class B(ClassNode):
+class B(classtree.Node):
     pass
 
 
-class AA(ClassNode):
+class AA(classtree.Node):
     pass
 
 
-class AB(ClassNode):
+class AB(classtree.Node):
     pass
 
 
