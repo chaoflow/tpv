@@ -38,4 +38,11 @@ setup(name='tpv',
       include_package_data=True,
       zip_safe=True,
       install_requires=install_requires,
-      )
+      entry_points={
+          'tpv.tests.eps': [
+              'a = tpv.tests.test_tree_from_entry_points:A',
+              'a/a = tpv.tests.test_tree_from_entry_points:AA',
+              'a/b = tpv.tests.test_tree_from_entry_points:AB',
+              'b = tpv.tests.test_tree_from_entry_points:B',
+          ]
+      })
