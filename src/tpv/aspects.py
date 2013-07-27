@@ -106,20 +106,3 @@ class values(Aspect):
 class items(Aspect):
     def items(self, **kw):
         return list(self.iteritems(**kw))
-
-
-class seed_tree(Aspect):
-    _seed_factories = aspect.config(None)
-
-    @aspect.plumb
-    def __getitem__(_next, self, key):
-        try:
-            return _next(key)
-        except KeyError:
-            pass
-
-        factory = self._seed_factories[key]
-        factory = seed_tree(factory, seed_factories=factory)
-        node = factory()
-        self[key] = node
-        return node
