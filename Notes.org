@@ -20,6 +20,86 @@ update(_next, self, attributes)
 https://pypi.python.org/pypi/zope.event
 http://docs.zope.org/zope.event/usage.html
 
+
+**** implementation of event queue based on regexes
+
+***** usage scenario
+#+begin_src python
+  import tpv.event
+  
+  # subscribing
+  def send_email_on_user_status_change(userdata):
+      # send email
+      pass
+  tpv.event.subscriber['user-.*'] = send_email_on_user_status_change
+  
+  # firing
+  tpv.event.notify('user-approved', userdata)
+#+end_src
+
+
+***** queue and sorting
+to be written to tpv.event
+#+begin_src python
+  import re
+  
+  subscriber = dict()
+  
+  def notify(evtype, evdata):
+      for regex, func in tpv_subscriber:
+          if re.match(regex, event.evtype):
+              func(event.evdata)
+#+end_src
+
+***** possibly zope event redirection
+#+begin_src python
+  import zope.event
+
+  class Event(object):
+      def __init__(self, evtype, **evdata):
+          self.evtype = evtype
+          self.evdata = evdata
+
+  def zope_subscriber(event):
+      if not isinstance(event, TPVEvent):
+          return
+
+      notify(event.evtype, event.evdata)
+
+  zope.event.subscribers.append(zope_subscriber)
+#+end_src
+
+firing then like
+
+#+begin_src python
+  import zope.event, tpv.event
+  zope.event.notify(tpv.event.Event('user-apporoved', userdata))
+#+end_src
+
+
+***** subscription possibly using decorator syntax 
+wish
+#+begin_src python
+  import tpv.event
+
+  @tpv.event.subscribe(regex="user-.*")
+  def send_email_on_user_status_change(userdata):
+      # send email
+#+end_src
+
+implementation as aspect (does it work like this???)
+#+begin_src python
+  from metachao import aspect
+
+  class subscribe(aspect.Aspect):
+      regex = aspect.config(None)
+
+      @aspect.plumb
+      def __init__(_next, self):
+          global subscriber
+          subscriber[self.regex] = self
+#+end_src
+
 *** acl
 How can we solve ACLs more generically?
 check starapi/acl.py
