@@ -32,7 +32,181 @@ self_may_change_password.
 *** generic aspects
 **** think in dictionaries
 **** what can be done by combining two or more parallel trees
+***** use set operations to comine dicttrees
+****** titanpad work
+http://titanpad.com/PEWtchVWbS
+
+Generic aspects:
+
+A = {"a" : "Aabc", "b": { "b1": "Acde", "b2": "Afgh" }, "d": "Aijk" }
+B = {"a" : "Babc", "b": { "b1": "Bcde", "b3": "Bfgh" }, "e": "Bijk" }
+
+merge
+
+C = {"a" : ["Aabc", "Babc"], "b" : { "b1": ["Acde", "Bcde"], "b2": "Afgh" , "b3": "Bfgh"}, "d": "Aijk" , "e": "Bijk"}
+
+
+fallback
+
+C = {"a" : "Aabc", "b": { "b1": "Acde", "b2": "Afgh", "b3": "Bfgh" }, "d": "Aijk", "e": "Bijk" }
+
+C[b] -> weder A[b] noch B[b] -> fallback(A[b],B[b])
+
+fallback(A, to=B)
+
+class fallback (aspect.Aspect):
+     to = aspect.config(to = null)
+
+cache
+
+siehe fallback + A übernimmt elem falls gefunden in B
+A soll als config übergeben
+
+
+
+XOR - elem aus A wenn elem nicht in B -> C[key] != null when (A[key] != null && B[key] == null) || (A[key] == null && B[key] != null), C[key] == null when A[key] != null && B[key] != null
+intersectdata - attribute aus einem knoten in A ohne attrs aus dem knoten in B
+intersect
+xxx - f(x1. x2) = x1+x2
+
+A rootnode of some dicttree
+with attributes "a", "c"
+and child "b" (with attributes "b1", "b2")
+
+
+Daten
+A[a] + B[c] 
+
+
+For any set operation oper
+
+A oper B -> C
+so that set(A.keys() oper set(B.keys) == C.keys() and C[key] == f(A[key], B[key])
+f(x1. x2) = x1 if x2 != null else x2
+
+A&B -> C, C is dict
+(A&B).keys() 
+
+Returns Set
+dictview & other
+Return the intersection of the dictview and the other object as a new set.
+A = {"a" : ["Aabc", "Babc", "Cabc"], "b": { "b1": "Acde", "b2": "Afgh" }, "d": "Aijk" }
+B = {"a" : ["Aabc", "Cabc"], "b": { "b1": "Bcde", "b3": "Bfgh" }, "d": "Aijk" }
+
+1. key ebene
+A&B -> C = {"a" : ["Aabc", "Babc", "Cabc"], "d": "Aijk", "b": {"b1": "Acde"}} , { key: val for key, val in A.iteritems() if key in B }
+
+2. value ebene
+A&B -> C = {"a": ["Aabc", "Cabc"], "b": { }, "d": "Aijk" }
+
+Annahme
+B =  {"a" : ["Aabc", "Cabc"], "b": "b1aaaa", "d": "Aijk" }
+A&B -> C = {"a": ["Aabc", "Cabc"], "d": "Aijk" }
+
+{ key: set(A.get(key, [])) op set(B.get(key, [])) for key in A.keys() }
+
+
+3. item ebene
+siehe allg. items
+A&B -> C = {"a": ["Aabc", "Cabc"], "b": { }, "d": "Aijk" }
+
+Alternative 
+3. item ebene ->
+{ key: val for key, val in A.iteritems() if key in B and val == B[key] }
+
+
+dictview | other
+Return the union of the dictview and the other object as a new set.
+
+1. keys 
+siehe fallback
+
+2. values
+A = {"a" : "Aabc", "b": { "b1": "Acde", "b2": "Afgh" }, "d": "Aijk" }
+B = {"a" : "Babc", "b": { "b1": "Bcde", "b3": "Bfgh" }, "e": "Bijk" }
+
+C = {"a" : ["Aabc", "Babc"], "b" : { "b1": ["Acde", "Bcde"], "b2": "Afgh"}, "d": "Aijk"}
+
+{ key: set(A.get(key, [])) op set(B.get(key, [])) for key in A.keys() }
+
+3. items
+siehe merge
+
+{ key: set(A.get(key, [])) op set(B.get(key, [])) for key in set(A.keys()) op set(B.keys()) }
+
+dictview - other
+Return the difference between the dictview and the other object (all elements in dictview that aren’t in other) as a new set.
+
+1. keys
+siehe allg. keys
+
+2. values 
+siehe allg. values
+
+3. items
+siehe allg. items
+
+dictview ^ other
+Return the symmetric difference (all elements either in dictview or other, but not in both) of the dictview and the other object as a new set.
+
+1. keys
+siehe allg. keys
+
+2. values
+siehe allg. values
+
+3. items
+nicht zutreffend, da keys immer unterschiedlich, glech wie keys
+
+set allgemein
+
+1. keys
+{ key: A.get(key, B.get(key))) for key in set(A.keys()) op set(B.keys())
+if A.get(key, B.get(key))) }
+
+2. values
+{ key: set(A.get(key, [])) op set(B.get(key, [])) for key in A.keys() 
+if set(A.get(key, [])) op set(B.get(key, [])) }
+
+3. items
+{ key: set(A.get(key, [])) op set(B.get(key, [])) for key in set(A.kegys()) op set(B.keys())
+if set(A.get(key, [])) op set(B.get(key, [])) }
+
+
+Zusätzlich
+Finde alle keys aus B wenn werte mit elems aus A übereinstimmen
+A = [("Aabc", "Cabc") , "Aijk", "Bcde" ]
+B = {"a" : ["Aabc", "Cabc"], "b": { "b1": "Bcde", "b3": "Bfgh" }, "d": "Aijk", "e": "Aijk" }
+C = {("Aabc", "Cabc") : "a", "Bcde": [["b", "b1"]], "Aijk": ["d", "e"]}
+
+
+
+****** summary
+set operations are applied recursively to one of three layers (keys,
+values, items), where their definition on one dictionary is
+approximately the following:
+
+1. keys
+{ key: A.get(key, B.get(key))) for key in set(A.keys()) op set(B.keys())
+if A.get(key, B.get(key))) }
+
+2. values
+{ key: set(A.get(key, [])) op set(B.get(key, [])) for key in A.keys() 
+if set(A.get(key, [])) op set(B.get(key, [])) }
+
+3. items
+{ key: set(A.get(key, [])) op set(B.get(key, [])) for key in set(A.kegys()) op set(B.keys())
+if set(A.get(key, [])) op set(B.get(key, [])) }
+
+
+****** derived aspects
+fallback is a key layer with the union operation
+merge is a item layer with the union operation
+
+cache doesn't fall into these categories
 ***** cache
+a prototype has been implemented in generic.py.
+
 one tree is used to cache information in another tree.
 ****** check cache
 ****** return if cached
@@ -46,7 +220,10 @@ traverse one tree and fall back to other tree on KeyError.
 ***** merge
 traverse two trees and merge the information to be returned
 ***** call first, hand second as argument
-***** ...
+??
+***** common problem
+the aspect logic is often made complicated by having to deal with
+unbalanced trees ... general solution ???
 
 *** look through starapi
 come up with ideas/code that generalizes the concepts being used in
