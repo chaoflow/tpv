@@ -1,5 +1,3 @@
-from itertools import izip
-
 from metachao import aspect
 from metachao.aspect import Aspect
 
@@ -44,12 +42,11 @@ class set_oper_dicttree_keys(Aspect):
 def ensure_set(x):
     if isinstance(x, tuple):
         return set(x)
-    else:
-        try:
-            return set((x,))
-        except TypeError:
-            return set(x)
 
+    try:
+        return set((x,))
+    except TypeError:
+        return set(x)
 
 # values layer
 class set_oper_dicttree_values(Aspect):
@@ -125,10 +122,7 @@ class set_oper_dicttree_items(Aspect):
                 raise TypeError("Element for %s is not of type dictionary" % key)
         elif isinstance(val_b, dict):
             if not key_is_in_a:
-                if self.op == 'difference':
-                    raise KeyError(key)
-                else:
-                    return val_b
+                return val_b
             else:
                 raise TypeError("Element for %s is not of type dictionary" % key)
 
@@ -167,6 +161,7 @@ fallback = set_oper_dicttree_keys(op="union")
 
 merge = set_oper_dicttree_items(op="union")
 
+filter_out = set_oper_dicttree_keys(op="difference")
 
 class cache(Aspect):
     cache = aspect.config(cache=None)
@@ -220,22 +215,18 @@ class cache(Aspect):
 
     iterkeys = __iter__
 
-    # def itervalues(self):
-    #     # XXX should possibly be implemented based on plumbing for
-    #     # speed reasons
-    #     for key in iter(self):
-    #         yield self[key]
-
     def itervalues(self):
         for key, val in self.iteritems():
             yield val
 
-    # def iteritems(self):
-    #     return izip(self.iterkeys(), self.itervalues())
-
     @aspect.plumb
     def iteritems(_next, self):
-        if self.cache_complete == False:
+        if self.cache_complete:
+            # mixing iterators and return fails, thus as a shallow
+            # generator
+            for x in self.cache.iteritems():
+                yield x
+        else:
             for key, val in _next():
                 if isinstance(val, dict):
                     val = cache(val)
@@ -247,12 +238,6 @@ class cache(Aspect):
 
             self.cache_complete = True
             self.cache_keys = self.cache.keys()
-        else:
-            for x in self.cache.iteritems():
-                yield x
-
-            # mixing iterators and return fails?!
-            # return self.cache.iteritems()
 
     def items(self):
         return list(self.iteritems())
