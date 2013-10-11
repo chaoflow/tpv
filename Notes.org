@@ -281,6 +281,106 @@ if set(A.get(key, [])) op set(B.get(key, [])) }
 if set(A.get(key, [])) op set(B.get(key, [])) }
 
 
+****** examples
+#+begin_src python
+  A = {"a" : "A1",
+       "b": { "b1": "B1", "b2": "B2", "b3": "B3" },
+       "c": [ "C1", "C2" ],
+       "d": { "d1": "D1" }}
+  
+  B = {"a" : "A2",
+       "b": { "b1": "B1", "b2": "Bx", "b4": "B4" },
+       "c": [ "C1", "C3" ],
+       "e": "E1" }
+  
+  ## keys
+  #
+  
+  # union
+  set_oper_dicttree_keys(A, on=B, op="union")
+  = {"a": "A1",
+     "b": { "b1": "B1", "b2": "B2", "b3": "B3", "b4": "B4" },
+     "c": [ "C1", "C2" ],
+     "d": { "d1": "D1" },
+     "e": "E1" }
+  =: fallback(A, on=B)
+  
+  # intersection
+  set_oper_dicttree_keys(A, on=B, op="intersection")
+  = {"a": "A1",
+     "b": { "b1": "B1", "b2": "B2" },
+     "c": [ "C1", "C2" ]}
+  
+  # difference
+  set_oper_dicttree_keys(A, on=B, op="difference")
+  = {"d": { "d1": "D1" }}
+  =: filter_out(A, on="B")
+  
+  # symmetric_difference (XOR)
+  set_oper_dicttree_keys(A, on=B, op="symmetric_difference")
+  = {"d": { "d1": "D1" },
+     "e": "E1" }
+  
+  ## values
+  #
+  
+  # union
+  set_oper_dicttree_values(A, on=B, op="union")
+  = {"a": ["A1", "A2"],
+     "b": { "b1": "B1", "b2": ["B2", "Bx"], "b3": "B3" },
+     "c": [ "C1", "C2", "C3" ],
+     "d": { "d1": "D1" }}
+  
+  # intersection
+  set_oper_dicttree_values(A, on=B, op="intersection")
+  = {"b": { "b1": "B1" },
+     "c": "C1"}
+  
+  # difference
+  set_oper_dicttree_values(A, on=B, op="difference")
+  = {"a": "A1",
+     "b": { "b2": "B2", "b3": "B3" },
+     "c": "C2",
+     "d": { "d1": "D1" }}
+  
+  # symmetric_difference
+  set_oper_dicttree_values(A, on=B, op="symmetric_difference")
+  = {"a": ["A1", "A2"],
+     "b": { "b2": ["B2", "Bx"], "b3": "B3" },
+     "c": [ "C2", "C3" ],
+     "d": { "d1": "D1" }}
+  
+  ## items
+  #
+  
+  # union
+  set_oper_dicttree_items(A, on=B, op="union")
+  = {"a": ["A1", "A2"],
+     "b": { "b1": "B1", "b2": ["B2", "Bx"], "b3": "B3", "b4": "B4" },
+     "c": [ "C1", "C2", "C3" ],
+     "d": { "d1": "D1" },
+     "e": "E1"}
+  =: merge(A, on=B)
+  
+  # intersection
+  set_oper_dicttree_items(A, on=B, op="intersection")
+  = {"b": { "b1": "B1" },
+     "c": "C1"}
+  =: sameitems(A, on=B) ( = match(A, on=B) )
+  
+  # difference
+  set_oper_dicttree_items(A, on=B, op="difference")
+  = {"d": { "d1": "D1" }}
+  
+  # symmetric_difference
+  set_oper_dicttree_items(A, on=B, op="symmetric_difference")
+  = {"d": { "d1": "D1" },
+     "e": "E1"}
+  
+  
+#+end_src
+
+
 ****** derived aspects
 fallback is a key layer with the union operation
 merge is a item layer with the union operation
