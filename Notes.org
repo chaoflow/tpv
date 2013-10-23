@@ -1,6 +1,11 @@
 #+TODO: TODO | DONE
 
 * Bits and Pieces
+
+** metachao question
+*** dict vs OrderedDict
+AttributeError: 'dict' object has no attribute '__dict__' ??
+
 ** tpv
 *** event
 starapi sends emails, if a user is approved. How can we solve this
@@ -39,7 +44,6 @@ http://docs.zope.org/zope.event/usage.html
   tpv.event.notify('user-approved', userdata)
 #+end_src
 
-
 ***** queue and sorting
 to be written to tpv.event
 #+begin_src python
@@ -75,9 +79,8 @@ firing then like
 
 #+begin_src python
   import zope.event, tpv.event
-  zope.event.notify(tpv.event.Event('user-apporoved', userdata))
+  zope.event.notify(tpv.event.Event('user-approved', userdata))
 #+end_src
-
 
 ***** subscription possibly using decorator syntax 
 wish
@@ -141,6 +144,8 @@ maybe one acl aspect, that uses functions like
 self_may_change_password.
 
 *** generic aspects
+
+**** DONE comment code
 **** think in dictionaries
 **** what can be done by combining two or more parallel trees
 ***** use set operations to comine dicttrees
@@ -448,6 +453,8 @@ child class. Instantiation is handled by plumbum.cli.
 tpv.nix is using tpv.cli already. see there and plumbum.cli
 documentation for what you can do.
 
+*** DONE comments
+
 *** tab completion for bash and zsh (zsh priority)
 We have two trees: application model and data model, for both we want
 tab completion. (Maybe it is just calling keys and filtering out the
@@ -474,6 +481,7 @@ switches can't have multiple arguments as in foo -f file1 file2 where
 both are arguments to the switch -f. probably plumbum doesn't even
 support this, either.
 
+xin --help-zsh-comp
 ****** subcommands
 working
 
@@ -588,6 +596,7 @@ xin -p profile generation
 then the called command looks like
 xin -p --complete argname:2
  
+**** TODO install zsh definitions from setup.py
 ** tpv.http
 Provide a restful API to interact with tpv trees and connect restful
 APIs as tpv subtrees.
@@ -712,3 +721,32 @@ problem.
           self.assertNotEqual(ret1, ret2)
   
 #+end_src
+
+** extended dicttrees
+separate branches and leaves
+
+class exdicttree:
+    def __getitem__(key):
+        return _leafs[key]
+
+    def __call__(key):
+        return _branches[key]
+
+
+A = exdicttree(rastoienart)
+
+A["a"]("a1")[]
+
+A["a"]["a"]
+for leaf in A["a"]["a"].leafs():
+
+({"b1": ({}, {"b1l1": 1, "b2l2": 2}), "b2": ({}, {})}, {"l1":"foo", "l2":bar} )
+
+
+    _leafs = dict()
+    _branches = dict(exdicttree(), exdicttree())
+{ }
+{ }
+
+aspect("a", on="b", op=sarieont)
+
