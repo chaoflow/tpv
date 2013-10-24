@@ -143,6 +143,136 @@ we want declarative
 maybe one acl aspect, that uses functions like
 self_may_change_password.
 
+aspect on a dicttree
+
+
+**** nodes centric (work in progress)
+
+rules are already checked during traversal, so that all rules
+belonging to the path to a node have been checked, before arriving
+there (a bit like it works in the case of filesystems)
+
+probably thus it is sensible to have allow as a default for traversing
+to avoid having to define rules for every single node; (for
+delete/put/post actions allow is NOT sensible).
+
+possibly have different trees, for different methods.
+
+
+example:
+
+dict(users=dict(foo14=...))
+
+how do you define a rule for dynamic name foo14 under path /users
+
+/users, { regex: [ { 'method': <method_tuple>,
+                     'roles': <roles>,
+                     '...': <...>,   <- more declarative restrictions
+                     'callback': <callback> },
+                   ...
+                 ],
+          regex2: [ { ... } ] }
+
+...
+
+
+not clear how this compares to the next idea, probably a combination
+of the next 2 ideas is a better go (gut feeling).
+
+**** full path regex match centric
+
+doesn't check any rules during traversal (continuous getitem on
+branches), but keeps track of full path.
+
+on access of any leaf
+or other put, post, delete
+
+full path is matched against a set of regexes. all matching regexes
+are considered and form the rules. a rule consists of a tuple of
+methods for which it is active. a callback method which either returns
+True (yes, allow the action) or False (don't care) or even raises
+Forbidden (no, not allowed). the callback may use anything belonging
+to authenticated_user_id, the path, the method and the branch on which
+the leaf access is performed.
+
+very similar to current acl.py. might only be a rearranging of
+code. perhaps no further insight.
+
+on the other hand a set of generic callbacks !!might!! further provide
+usable abstraction.
+
+{ '/regex/': { 'method': <method_tuple>,
+               'roles': <roles>,
+               '...': <...>,   <- more declarative restrictions
+               'data-callback': arosint
+               'callback': <callback> } }
+
+OrderedDict({
+  '/user/.*': { 'roles': ("Admin",) },
+  '/user/.*': { 'callback': IFSELFUSERALLOW }
+  '.*' : { 'callback': BlockEveryThing }
+})
+
+<method_tuple> like ('GET', 'PUT') (means rule is active for GET and
+PUT actions)
+
+**** both methods are similar
+we're missing right now the ability to filter response data 
+
+#+begin_src python
+  def GET(...):
+  
+    ...
+  
+    # user may see certain fields herself
+    elif url == '/users/%s' % (authenticated_user_id,):
+      attributes = _next(**kw)
+      for k in set(attributes.keys()) - SELF_READABLE:
+          del attributes[k]
+      return attributes
+#+end_src
+
+callback wants to do more, than just providing True, False or
+Raise. It could also just route data through??!!
+
+So a callback may return:
+- True -> Yep hand over to next
+- False -> don't care, isn't there another rule, which knows more
+- raise exc.Forbidden -> nope, not allowed
+- dict or list like -> hand this data back
+
+for rule in matching_rules:
+   ret = rule(....)
+   if ret === True:
+     return _next(...)
+   elif isinstance(ret, (list, dict)):
+     return ret
+
+return _next()
+
+
+**** node based, but restricted to pure declarative style
+typically used in combination with the regex aspect
+
+{ '/user/': [{ 'authenticated': True, 
+               'roles': ( ... ),
+               'methods': ( ... ),
+               'other restrictions': ( ... ),
+               'default': one of ('ALLOW', 'DENY') },
+             ]
+}
+
+**** need to define mechanism to discern active roles
+roles seems to be path dependant
+
+***** using developer provides roles function
+
+this function is called with the current path, branch,
+authenticated_user_id, .... and roles which might be fulfilled.
+it should return whether the user has those roles, return them.
+
+is only called and/or to be provided if 'roles' is part of a rule.
+
 *** generic aspects
 
 **** DONE comment code
@@ -723,7 +853,7 @@ problem.
 #+end_src
 
 ** extended dicttrees
-separate branches and leaves
+separation branches and leaves
 
 class exdicttree:
     def __getitem__(key):
