@@ -399,14 +399,24 @@ filter_out = set_oper_dicttree_keys(op="difference")
 
 class cache(Aspect):
     # allow to supply a dictionary to be used as the cach'ing object
-    # TODO can not be passed on to the next recursion level
     # initialised as an empty dictionary by the constructor if None.
     cache = aspect.config(cache=None)
 
+    # class of which the instances are to be cached
+    node_class = aspect.config(node_class=dict)
+
+    def _get_cache(self, node):
+        '''Returns a cache object for a given node'''
+        return getattr(node, "cache_class", self.cache.__class__
+                       if self.cache is not None else dict)()
+
+    def _wrap_child(self, child):
+        return cache(child, cache=self._get_cache(child))
+
     @aspect.plumb
-    def __init__(_next, self):
+    def __init__(_next, self, *args, **kwargs):
         if self.cache is None:
-            self.cache = dict()
+            self.cache = self._get_cache(self)
 
         # if not None, contains the whole list of keys (so that
         # repetitive calls to keys() are cached)
@@ -415,7 +425,7 @@ class cache(Aspect):
         # marks, whether self.cache contains the whole dictionary
         self.cache_complete = False
 
-        _next()
+        _next(*args, **kwargs)
 
     @aspect.plumb
     def __getitem__(_next, self, key):
@@ -428,11 +438,9 @@ class cache(Aspect):
         # else from the source
         ret = _next(key)
 
-        if isinstance(ret, dict):
+        if isinstance(ret, self.node_class):
             # branch case, do the recursion
-            ret = cache(ret)
-            # TODO cache object should also be configurable for
-            # children
+            ret = self._wrap_child(ret)
 
         # commit value to cache
         self.cache[key] = ret
@@ -448,6 +456,25 @@ class cache(Aspect):
         # keep cache_keys up-to-date
         if self.cache_keys is not None and key not in self.cache_keys:
             self.cache_keys.append(key)
+
+    @aspect.plumb
+    def update(_next, self, E, **F):
+        # hand through
+        _next(E, **F)
+        # update cache
+        self.cache.update(E, **F)
+
+        if self.cache_keys is not None:
+            keys = set()
+            if E:
+                if hasattr(E, "keys"):
+                    keys.update(E.keys())
+                else:
+                    keys.update(v for k, v in E)
+
+            keys.update(F.keys())
+
+            self.cache_keys += list(keys.difference(self.cache_keys))
 
     @aspect.plumb
     def __iter__(_next, self):
@@ -485,11 +512,9 @@ class cache(Aspect):
                 yield x
         else:
             for key, val in _next():
-                if isinstance(val, dict):
+                if isinstance(val, self.node_class):
                     # branch case, do the recursion
-                    val = cache(val)
-                    # TODO cache object should also be configurable for
-                    # children
+                    val = self._wrap_child(val)
 
                 # update in cache
                 self.cache[key] = val
@@ -515,6 +540,6 @@ class cache(Aspect):
     # provide a function to empty the cache, when one uses
     # side-channels to change the source
     def clear_cache(self):
-        self.cache = dict()
+        self.cache = self._get_cache(self)
         self.cache_complete = False
         self.cache_keys = []

@@ -148,6 +148,22 @@ class TestCache(unittest.TestCase):
         self.assertEqual(self.A['b'], 'overwrite')
         self.assertEqual(C['b'], 'overwrite')
 
+    def test_update(self):
+        C = generic.cache(self.A)
+
+        # put keys into cache
+        C.keys()
+
+        C.update({'b': 'new_b'}, d='new_d', e='new_e')
+
+        self.assertEqual(self.A['b'], 'new_b')
+        self.assertEqual(C['b'], 'new_b')
+
+        self.assertEqual(self.A['d'], 'new_d')
+        self.assertEqual(C['d'], 'new_d')
+
+        self.assertTrue('e' in C.cache_keys)
+        self.assertTrue('e' in C.keys())
 
     def test_getitem_on_children(self):
         C = generic.cache(self.A)
